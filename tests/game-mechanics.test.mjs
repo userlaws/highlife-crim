@@ -47,7 +47,7 @@ test('every voltage puzzle has a valid one-to-one solution', () => {
 });
 
 test('Data Crack uses the source speed curve and hit window', () => {
-  assert.deepEqual(dataSpeedPresets,[5,6,7,8,9,10]);
+  assert.deepEqual(dataSpeedPresets,[5,6,7,8,9,10,11,12,13,14,15]);
   const firstSpeed=.02*.55*5*10;
   assert.ok(Math.abs(dataBarPosition(0,0)-.744)<1e-9);
   assert.ok(Math.abs(dataBarPosition(1/firstSpeed,0)-.4)<1e-9);
@@ -75,7 +75,7 @@ test('drilling cannot advance without rotation, and idle cools without losing de
   for(let i=0;i<300;i++)drill=stepDrill(drill,1,0,1/60);
   assert.ok(drill.position<=.1);assert.equal(drill.depth,.1);
   drill=stepDrill({position:.5,depth:.5,heat:.6,speed:.5},0,0,.1);
-  assert.equal(drill.depth,.5);assert.equal(drill.position,.5);assert.ok(Math.abs(drill.heat-.5)<1e-9);
+  assert.equal(drill.depth,.5);assert.equal(drill.position,.5);assert.ok(Math.abs(drill.heat-.55)<1e-9);
 });
 
 test('aggressive drilling overheats before opening the vault', () => {
@@ -92,12 +92,29 @@ test('fresh drill presses have source-sized impulses and a stalled bit does not 
 });
 
 test('controlled drilling can reach full depth inside the trainer preset', () => {
-  let drill={...initialDrill(),speed:.15};
+  let drill={...initialDrill(),speed:.6};
   let seconds=0;
   while(drill.position<1 && seconds<30) {
-    drill=stepDrill(drill,drill.heat<.15?1:0,0,1/60);
+    drill=stepDrill(drill,drill.heat<.3?1:0,0,1/60);
     seconds+=1/60;
     assert.ok(drill.heat<1);
   }
   assert.equal(drill.position,1);
+  assert.ok(seconds<25);
+});
+
+test('holding the bit in just above the cut threshold overheats instead of winning', () => {
+  let drill={...initialDrill(),speed:.15};
+  let seconds=0;
+  while(drill.position<1 && drill.heat<1 && seconds<30) {
+    drill=stepDrill(drill,1,0,1/60);
+    seconds+=1/60;
+  }
+  assert.equal(drill.heat,1);
+  assert.ok(drill.position<1);
+});
+
+test('a stalled bit under pressure does not cool', () => {
+  const stalled=stepDrill({position:.1,depth:.1,heat:.5,speed:0},1,0,.1);
+  assert.equal(stalled.heat,.5);
 });

@@ -180,9 +180,9 @@ kbd { font-family:inherit; font-size:10px; border:1px solid currentColor; border
 }
 @media(prefers-reduced-motion:reduce) { .working-drill { animation:none; } }
 
-.submit-score { display:flex; flex-wrap:wrap; align-items:center; gap:8px; margin-top:12px; }
+.submit-score { display:flex; flex-wrap:wrap; align-items:center; gap:8px; margin:0 0 14px; padding-bottom:14px; border-bottom:1px solid var(--line); }
 .submit-score label { width:100%; color:var(--subtle); font-size:12px; letter-spacing:.02em; }
 .submit-score input { height:34px; width:150px; padding:0 10px; border:1px solid var(--line); border-radius:8px; background:var(--panel); color:var(--text); font:inherit; }
 .submit-score input:focus-visible { outline:2px solid var(--blue); outline-offset:1px; }
 .submit-score small { width:100%; color:#e4726d; font-size:12px; }
-.submit-score-done { margin:12px 0 0; color:var(--subtle); font-size:13px; }
+.submit-score-done { margin:0 0 14px; padding-bottom:14px; border-bottom:1px solid var(--line); color:var(--subtle); font-size:13px; }

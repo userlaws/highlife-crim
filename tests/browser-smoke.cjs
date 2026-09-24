@@ -44,8 +44,8 @@ const { chromium } = require(candidate);
     console.log('Drill successful:',drilling.replace(/\n+/g,' | '));
     await page.getByRole('link',{name:'Back to games',exact:false}).click();
     await page.locator('a.practice-button[href="/play/data"]').click();
-    assert.equal(await page.getByLabel('Bar speed').inputValue(),'5');
-    assert.deepEqual(await page.getByLabel('Bar speed').locator('option').evaluateAll(options=>options.map(option=>Number(option.value))),[5,6,7,8,9,10]);
+    assert.equal(await page.getByLabel('Bar speed').inputValue(),'12');
+    assert.deepEqual(await page.getByLabel('Bar speed').locator('option').evaluateAll(options=>options.map(option=>Number(option.value))),[5,6,7,8,9,10,11,12,13,14,15]);
     await page.getByRole('button',{name:'Start game',exact:true}).click();
     await page.locator('.data-pc').waitFor();
     const geometry=await page.evaluate(()=>{
@@ -77,6 +77,6 @@ const { chromium } = require(candidate);
     assert.equal(await page.locator('.gallery-card').count(),4);
     assert.equal(await page.evaluate(()=>performance.timeOrigin),origin);
     assert.deepEqual(errors,[]);
-    console.log('PASS: themes, client navigation, mouse drill, drill completion, Data Crack speed 5 and first miss, video gallery, mobile overflow, no runtime errors.');
+    console.log('PASS: themes, client navigation, mouse drill, drill completion, Data Crack speed 12 and first miss, video gallery, mobile overflow, no runtime errors.');
   } finally {await browser.close();}
 })().catch(error=>{console.error(error);process.exitCode=1;});

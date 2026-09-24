@@ -33,7 +33,8 @@ export type GameId = keyof typeof gameCatalog;
 export function isGameId(value: string): value is GameId { return Object.hasOwn(gameCatalog, value); }
 
 export const HEX = '0123456789ABCDEF';
-export const dataSpeedPresets = [5, 6, 7, 8, 9, 10] as const;
+export const dataSpeedPresets = [5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15] as const;
+export const dataSpeedDefault = 12;
 export const randomInt = (max: number) => Math.floor(Math.random() * max);
 export const randomHex = () => HEX[randomInt(HEX.length)];
 export const clamp = (value: number, low: number, high: number) => Math.min(high, Math.max(low, value));
@@ -80,14 +81,25 @@ export function dataBarPosition(seconds: number, bar: number, difficulty = 5) {
 export function dataBarMatches(position: number) { return position >= 0.51 && position <= 0.62; }
 export type DrillState = {position:number; depth:number; speed:number; heat:number};
 export const initialDrill = (): DrillState => ({position:0, depth:0.1, speed:0, heat:0});
+export const drillCutThreshold = 0.1;
 export function stepDrill(previous: DrillState, pressure:number, throttle:number, dt:number, taps = {pressure:0, throttle:0}): DrillState {
   const speed = clamp(previous.speed + (taps.throttle ? taps.throttle * 0.05 : throttle * 0.5 * dt), 0, 1);
-  const advance = taps.pressure ? taps.pressure * 0.01 : pressure > 0 ? 0.1 * dt / (Math.max(0.1, previous.heat) * 10) : pressure * 0.1 * dt;
+  // A hot bit stops biting, so overheating costs progress before it ends the run.
+  const bite = speed * (1 - previous.heat * 0.75);
+  const advance = taps.pressure ? taps.pressure * 0.01
+    : pressure > 0 ? 0.3 * bite * dt
+    : pressure * 0.1 * dt;
+  const pressing = pressure > 0 || taps.pressure > 0;
   let position = clamp(previous.position + advance, 0, 1);
   let {depth, heat} = previous;
   if (position > depth) {
-    if (speed > 0.1) { depth = position; heat += dt * speed; }
-    else position = depth;
-  } else heat -= dt;
+    if (speed > drillCutThreshold) {
+      depth = position;
+      // A tap advances a fixed amount regardless of frame rate, so it carries
+      // its own heat cost; a purely time-based model lets fast clicking outrun
+      // the temperature entirely.
+      heat += dt * (0.15 + speed * speed * 0.95) + Math.max(0, taps.pressure) * 0.05;
+    } else position = depth;
+  } else if (!pressing) heat -= dt * 0.5;
   return {position, depth, speed, heat:clamp(heat, 0, 1)};
 }

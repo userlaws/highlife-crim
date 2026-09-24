@@ -1,9 +1,17 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { clamp, createVoltPuzzle, randomInt, voltageTotal } from '@/lib/games';
+import { createVoltPuzzle, randomInt, voltageTotal } from '@/lib/games';
 import { GameProps, useGameKeys } from './use-game-input';
 import { DigitalNumber } from './digital-number';
+
+function shiftSocket(current:number, direction:number, taken:(index:number)=>boolean) {
+  const free = [0,1,2].filter((index)=>!taken(index));
+  if (!free.length) return current;
+  const at = free.indexOf(current);
+  if (at < 0) return direction > 0 ? free[0] : free[free.length-1];
+  return free[Math.min(free.length-1, Math.max(0, at + direction))];
+}
 
 export function VoltLab({active, remaining, duration, onFinish}:GameProps) {
   const [puzzle] = useState(createVoltPuzzle);
@@ -40,8 +48,8 @@ export function VoltLab({active, remaining, duration, onFinish}:GameProps) {
   }, [connections,input,output,canConnect]);
   function move(side:'input'|'output',direction:number) {
     if(!active||busy.current) return;
-    if(side==='input') setInput(clamp(input+direction,0,2));
-    else if(output>=0||direction>0) setOutput(clamp(output+direction,0,2));
+    if(side==='input') setInput(shiftSocket(input,direction,(i)=>connections[i]>=0));
+    else setOutput(shiftSocket(output,direction,(i)=>connections.includes(i)));
   }
   function connect() {
     if(!active || busy.current || output<0 || committed.current[input]>=0 || committed.current.includes(output)) return;
@@ -53,7 +61,12 @@ export function VoltLab({active, remaining, duration, onFinish}:GameProps) {
       const result=voltageTotal(puzzle.values,puzzle.multipliers,next);
       if(next.every(to=>to>=0)) {
         confirmation.current=setTimeout(()=>onFinish(result===puzzle.target,result===puzzle.target?'Voltage matched. Circuit bypassed.':`Circuit closed at ${result}; target was ${puzzle.target}.`),1000);
-      } else {busy.current=false;setPending(false);setMessage(`Input ${input+1} connected. Committed result: ${result}.`);}
+      } else {
+        busy.current=false;setPending(false);
+        setInput(shiftSocket(-1,1,(i)=>next[i]>=0));
+        setOutput(-1);
+        setMessage(`Input ${input+1} connected. Committed result: ${result}.`);
+      }
     },1000);
   }
   useGameKeys(active&&!pending,(key,repeat)=>{

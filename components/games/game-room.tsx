@@ -3,7 +3,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { ThemeToggle } from '@/components/theme-toggle';
-import { dataSpeedPresets, gameCatalog, GameId } from '@/lib/games';
+import { dataSpeedDefault, dataSpeedPresets, gameCatalog, GameId } from '@/lib/games';
 import { CodeMatch } from './code-match';
 import { DataCrack } from './data-crack';
 import { VaultDrill } from './vault-drill';
@@ -17,7 +17,7 @@ export function GameRoom({game}: {game:GameId}) {
   const [phase,setPhase]=useState<Phase>('ready');
   const phaseRef=useRef<Phase>('ready');
   const [duration,setDuration]=useState<number>(config.limit);
-  const [difficulty,setDifficulty]=useState(5);
+  const [difficulty,setDifficulty]=useState<number>(dataSpeedDefault);
   const [remaining,setRemaining]=useState<number>(config.limit);
   const [round,setRound]=useState(0);
   const [message,setMessage]=useState('');
@@ -53,9 +53,9 @@ export function GameRoom({game}: {game:GameId}) {
   useGameKeys(active,()=>finish(false,'Hack aborted.'),['escape','backspace']);
   const props={active,remaining,duration,onFinish:finish};
   return <div className="page-shell game-page"><ThemeToggle/><main className="game-content"><Link prefetch href="/" className="game-brand">How to <span>Crim</span></Link><div className="game-heading"><div><Link prefetch className="back-link" href="/#practice">← Back to games</Link><h1>{config.title}</h1><p>{config.description}</p></div><div className="run-clock" aria-label={`${remaining.toFixed(1)} seconds remaining`}><span>{active?'TIME LEFT':'TIME LIMIT'}</span><strong className={active&&remaining<5?'time-critical':''}>{(phase==='ready'?duration:remaining).toFixed(2)}<small>s</small></strong></div></div>
-    <div className="run-toolbar"><label>Time limit<select disabled={active} value={duration} onChange={e=>{setDuration(Number(e.target.value));setRemaining(Number(e.target.value));setPhase('ready');phaseRef.current='ready';}}>{[15,30,45,60,90].map(value=><option key={value} value={value}>{value} seconds</option>)}</select></label>{game==='data'&&<label>Bar speed<select disabled={active} value={difficulty} onChange={e=>{setDifficulty(Number(e.target.value));setPhase('ready');phaseRef.current='ready';}}>{dataSpeedPresets.map(value=><option key={value} value={value}>{value}{value===5?' - Default':''}</option>)}</select></label>}<span className="personal-best">Your best <strong>{best===null?'—':`${best.toFixed(2)}s`}</strong><small>On this device · current settings</small></span></div>
+    <div className="run-toolbar"><label>Time limit<select disabled={active} value={duration} onChange={e=>{setDuration(Number(e.target.value));setRemaining(Number(e.target.value));setPhase('ready');phaseRef.current='ready';}}>{[15,30,45,60,90].map(value=><option key={value} value={value}>{value} seconds</option>)}</select></label>{game==='data'&&<label>Bar speed<select disabled={active} value={difficulty} onChange={e=>{setDifficulty(Number(e.target.value));setPhase('ready');phaseRef.current='ready';}}>{dataSpeedPresets.map(value=><option key={value} value={value}>{value}{value===dataSpeedDefault?' - Default':''}</option>)}</select></label>}<span className="personal-best">Your best <strong>{best===null?'—':`${best.toFixed(2)}s`}</strong><small>On this device · current settings</small></span></div>
     {phase==='ready'?<section className="ready-panel"><span className="game-eyebrow">{game==='code'?'KEYPAD OVERRIDE':game==='data'?'SIGNAL ALIGNMENT':game==='drill'?'VAULT ACCESS':'VOLTAGE REGULATOR'}</span><h2>Ready when you are.</h2><p>{config.instructions}</p><Button size="lg" onClick={start}>Start game</Button><small>The timer starts when you press Start game.</small></section>:<section className="game-stage" aria-label={`${config.title} game`} key={`${game}-${round}`}>{game==='code'?<CodeMatch {...props} onPenalty={penalty}/>:game==='data'?<DataCrack {...props} difficulty={difficulty}/>:game==='drill'?<VaultDrill {...props}/>:<VoltLab {...props}/>}</section>}
-    {phase==='success'||phase==='failure'?<section className={`run-result ${phase}`} role="status"><div><h2>{phase==='success'?'Complete':'Try again'}</h2><p>{message}</p><span>{resultTime.toFixed(2)}s elapsed</span>{phase==='success'&&<SubmitScore game={game} seconds={resultTime} key={round}/>}</div><Button onClick={start}>Play again</Button></section>:active?<div className="run-actions"><span>The timer keeps running if you switch tabs.</span><Button variant="outline" onClick={()=>finish(false,'Run ended. Start again when you are ready.')}>End run</Button></div>:null}
+    {phase==='success'||phase==='failure'?<section className={`run-result ${phase}`} role="status"><div>{phase==='success'&&<SubmitScore game={game} seconds={resultTime} key={round}/>}<h2>{phase==='success'?'Complete':'Try again'}</h2><p>{message}</p><span>{resultTime.toFixed(2)}s elapsed</span></div><Button onClick={start}>Play again</Button></section>:active?<div className="run-actions"><span>The timer keeps running if you switch tabs.</span><Button variant="outline" onClick={()=>finish(false,'Run ended. Start again when you are ready.')}>End run</Button></div>:null}
     <details className="game-instructions" open={phase==='ready'}><summary>How to play</summary><p>{config.instructions}</p>{game==='volt'&&<p>For example: 6 × 50 + 6 × 10 + 5 × 1 = 365. Use the changing result to work out which socket has each multiplier before committing.</p>}<p className="trainer-note">Browser recreation based on <a href={config.source} target="_blank" rel="noreferrer">{config.sourceName} ↗</a>. {game==='code'?'15 seconds follows the supplied video reference.':'30 seconds is a trainer preset.'} Exact Highlife server settings may differ.</p></details>
   </main></div>;
 }
