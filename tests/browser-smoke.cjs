@@ -45,7 +45,7 @@ const { chromium } = require(candidate);
     await page.getByRole('link',{name:'Back to games',exact:false}).click();
     await page.locator('a.practice-button[href="/play/data"]').click();
     assert.equal(await page.getByLabel('Bar speed').inputValue(),'12');
-    assert.deepEqual(await page.getByLabel('Bar speed').locator('option').evaluateAll(options=>options.map(option=>Number(option.value))),[5,6,7,8,9,10,11,12,13,14,15]);
+    assert.deepEqual(await page.getByLabel('Bar speed').locator('option').evaluateAll(options=>options.map(option=>Number(option.value))),[5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20]);
     await page.getByRole('button',{name:'Start game',exact:true}).click();
     await page.locator('.data-pc').waitFor();
     const geometry=await page.evaluate(()=>{

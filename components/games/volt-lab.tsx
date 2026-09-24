@@ -30,10 +30,9 @@ export function VoltLab({active, remaining, duration, onFinish}:GameProps) {
   const [connections, setConnections] = useState([-1,-1,-1]);
   const committed = useRef(connections);
   const canvas = useRef<HTMLCanvasElement>(null);
-  const [message, setMessage] = useState('Probe the outputs. Their symbols hide different multipliers each round.');
+  const [message, setMessage] = useState('Each symbol hides ×1, ×10 or ×50, reshuffled every attempt. RESULT only moves once you commit.');
   const total = voltageTotal(puzzle.values,puzzle.multipliers,connections);
   const canConnect = active && !pending && output>=0 && connections[input] < 0 && !connections.includes(output);
-  const preview = total + (output>=0 && connections[input] < 0 && !connections.includes(output) ? puzzle.values[input] * puzzle.multipliers[output] : 0);
   useEffect(() => {
     const ctx = canvas.current?.getContext('2d'); if (!ctx) return;
     ctx.clearRect(0,0,700,360);
@@ -72,13 +71,13 @@ export function VoltLab({active, remaining, duration, onFinish}:GameProps) {
   useGameKeys(active&&!pending,(key,repeat)=>{
     if(repeat)return;
     if(key==='enter'||key===' ') {if(!repeat) connect();return;}
-    if(['w','s','arrowup','arrowdown'].includes(key)) move('input',key==='w'||key==='arrowup'?-1:1);
-    else move('output',key==='a'||key==='arrowleft'?-1:1);
+    if(key==='w'||key==='s') move('input',key==='w'?-1:1);
+    else move('output',key==='arrowup'||key==='a'||key==='arrowleft'?-1:1);
   },['w','a','s','d','arrowup','arrowdown','arrowleft','arrowright','enter',' ']);
   return <div><div className="volt-game"><div className="volt-display volt-target"><span>TARGET</span><strong><DigitalNumber value={puzzle.target} pad={3}/></strong></div>
     <div className="volt-field"><canvas ref={canvas} width={700} height={360} aria-hidden="true"/>
       {puzzle.values.map((value,i)=><button key={i} className={`volt-input ${input===i?'socket-selected':''} ${connections[i]>=0?'socket-used':''}`} style={{top:`${25+i*25}%`}} aria-label={`Input ${i+1}: ${value}${connections[i]>=0?', connected':''}`} aria-pressed={input===i} disabled={!active||pending||connections[i]>=0} onClick={()=>setInput(i)}><DigitalNumber value={value}/></button>)}
       {symbols.map((symbol,i)=><button key={i} className={`volt-output ${output===i?'socket-selected':''} ${connections.includes(i)?'socket-used':''}`} style={{top:`${25+i*25}%`}} aria-label={`Output ${i+1}${connections.includes(i)?', connected':''}`} aria-pressed={output===i} disabled={!active||pending||connections.includes(i)} onClick={()=>setOutput(i)}>{symbol}</button>)}
-    </div><div className="volt-bottom"><div className="battery" aria-label={`${Math.ceil(remaining/duration*6)} timer segments remaining`}>{Array.from({length:6},(_,i)=><i key={i} className={i<Math.ceil(remaining/duration*6)?'charged':''}/>)}</div><div className={`volt-display volt-result ${preview===puzzle.target?'voltage-matched':''}`}><strong><DigitalNumber value={preview} pad={3}/></strong><span>RESULT · {canConnect?'PREVIEW':'CONNECTED'}</span></div><span className="volt-committed">{connections.filter(to=>to>=0).length} / 3 wired</span></div>
-    </div><p className="game-feedback" role="status">{message}</p><div className="control-row"><span>Preview → compare → commit</span><Button disabled={!canConnect} onClick={connect}>Connect <kbd>Enter</kbd></Button></div></div>;
+    </div><div className="volt-bottom"><div className="battery" aria-label={`${Math.ceil(remaining/duration*6)} timer segments remaining`}>{Array.from({length:6},(_,i)=><i key={i} className={i<Math.ceil(remaining/duration*6)?'charged':''}/>)}</div><div className={`volt-display volt-result ${total===puzzle.target?'voltage-matched':''}`}><strong><DigitalNumber value={total} pad={3}/></strong><span>RESULT</span></div><span className="volt-committed">{connections.filter(to=>to>=0).length} / 3 wired</span></div>
+    </div><p className="game-feedback" role="status">{message}</p><div className="control-row"><span>Input <kbd>W</kbd><kbd>S</kbd> · Output <kbd>↑</kbd><kbd>↓</kbd> · commit is final</span><Button disabled={!canConnect} onClick={connect}>Connect <kbd>Enter</kbd></Button></div></div>;
 }

@@ -23,7 +23,7 @@ export const gameCatalog = {
   volt: {
     title: 'VOLTlab', limit: 30,
     description: 'Route each input through a multiplier to reach the target.',
-    instructions: 'Use Up / Down (W / S) to choose an input and Left / Right (A / D) to choose an output. The result previews your connection. Outputs hide multipliers ×1, ×10, and ×50; their symbols change each round. Press Enter to commit. Connect all three inputs to reach the target. Connections cannot be undone. Touch users can select both sides and tap Connect.',
+    instructions: 'Use W / S to pick an input and Up / Down to pick an output, matching the in-game controls. The three outputs hide multipliers ×1, ×10, and ×50 behind symbols that change every attempt. RESULT only updates once a wire is committed, so you have to work the maths out yourself — you can solve from the front or the back. Press Enter to confirm; connections are irreversible. Wire all three inputs to hit the target. Touch users can select both sides and tap Connect.',
     source: 'https://github.com/ultrahacx/ultra-voltlab',
     sourceName: 'ultra-voltlab',
   },
@@ -33,7 +33,7 @@ export type GameId = keyof typeof gameCatalog;
 export function isGameId(value: string): value is GameId { return Object.hasOwn(gameCatalog, value); }
 
 export const HEX = '0123456789ABCDEF';
-export const dataSpeedPresets = [5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15] as const;
+export const dataSpeedPresets = [5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20] as const;
 export const dataSpeedDefault = 12;
 export const randomInt = (max: number) => Math.floor(Math.random() * max);
 export const randomHex = () => HEX[randomInt(HEX.length)];

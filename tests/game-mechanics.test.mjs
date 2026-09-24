@@ -47,7 +47,7 @@ test('every voltage puzzle has a valid one-to-one solution', () => {
 });
 
 test('Data Crack uses the source speed curve and hit window', () => {
-  assert.deepEqual(dataSpeedPresets,[5,6,7,8,9,10,11,12,13,14,15]);
+  assert.deepEqual(dataSpeedPresets,[5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20]);
   const firstSpeed=.02*.55*5*10;
   assert.ok(Math.abs(dataBarPosition(0,0)-.744)<1e-9);
   assert.ok(Math.abs(dataBarPosition(1/firstSpeed,0)-.4)<1e-9);

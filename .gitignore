@@ -43,3 +43,7 @@ skills-lock.json
 .openai
 .codex
 .cursor
+
+# local screenshot artifacts
+*-shot.png
+collage-desktop.png
