@@ -16,10 +16,20 @@ const geistMono = Geist_Mono({
 const title = 'How to Crim';
 const description = 'Simple guides, video references, and community best times for Highlife minigames.';
 
+// Share cards need absolute URLs, so metadataBase has to be the real origin at
+// build time. Vercel injects the deployment host; NEXT_PUBLIC_SITE_URL overrides
+// it once there is a custom domain.
+function siteUrl() {
+  if (process.env.NEXT_PUBLIC_SITE_URL) return process.env.NEXT_PUBLIC_SITE_URL;
+  if (process.env.VERCEL_ENV === 'production' && process.env.VERCEL_PROJECT_PRODUCTION_URL) {
+    return `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`;
+  }
+  if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}`;
+  return 'http://localhost:3000';
+}
+
 export const metadata: Metadata = {
-  // Set NEXT_PUBLIC_SITE_URL once the site has a domain so share cards resolve
-  // to absolute URLs.
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000'),
+  metadataBase: new URL(siteUrl()),
   title,
   description,
   icons: { icon: '/favicon.svg' },
