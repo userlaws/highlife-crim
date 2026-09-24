@@ -6,7 +6,7 @@ Four browser recreations of the minigames — **DES Code Match**, **Vault Drill*
 
 ## Stack
 
-- **Next.js 16** (App Router) built with Vite via [vinext](https://www.npmjs.com/package/vinext), deployed to Cloudflare Workers
+- **Next.js 16** (App Router)
 - **Neon** — Postgres for leaderboard times, and a Neon Function serving the API next to the database
 - **Tailwind CSS 4** + shadcn/ui components
 
@@ -17,14 +17,14 @@ npm install
 npm run dev          # http://localhost:3000
 ```
 
-For the leaderboard to load you need a `.env.local` with the API base URL:
+The leaderboard points at the deployed Neon Function by default, so it works
+with no configuration. To aim it at your own branch, set:
 
 ```
 NEON_FUNCTION_API_BASE_URL=https://<your-branch>-api.<region>.aws.neon.tech
 ```
 
-Running `neon link` writes this (and `DATABASE_URL`) automatically. Without it the
-site runs fine; the leaderboard just shows an error state.
+`neon link` writes this (and `DATABASE_URL`) into `.env.local` for you.
 
 Other scripts:
 
@@ -32,7 +32,7 @@ Other scripts:
 npm run build        # production build
 npm run lint
 node tests/game-mechanics.test.mjs
-npm exec --package=playwright -- node tests/browser-smoke.cjs   # needs dev server running
+npm exec --package=playwright -- node tests/browser-smoke.cjs   # needs a server running
 ```
 
 ## Leaderboard API
