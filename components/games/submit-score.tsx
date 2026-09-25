@@ -1,17 +1,14 @@
 'use client';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { GameId } from '@/lib/games';
+import { GameId, purityGames } from '@/lib/games';
 import { nameKey, submitScore } from '@/lib/leaderboard';
 
 type State = 'idle' | 'sending' | 'sent' | 'error';
 
-export function SubmitScore({ game, seconds }: { game: GameId; seconds: number }) {
-  // Only ever mounted after a win, i.e. client-side, so reading storage here
-  // cannot desync a server render.
-  const [player, setPlayer] = useState(() => {
-    try { return localStorage.getItem(nameKey) ?? ''; } catch { return ''; }
-  });
+// The name is owned by the game room so the win banner above the game can show it as it is typed.
+export function SubmitScore({ game, seconds, purity, player, onPlayerChange }: { game: GameId; seconds: number; purity?: number; player: string; onPlayerChange: (name: string) => void }) {
+  const byPurity = purityGames.includes(game);
   const [state, setState] = useState<State>('idle');
   const [message, setMessage] = useState('');
 
@@ -19,12 +16,12 @@ export function SubmitScore({ game, seconds }: { game: GameId; seconds: number }
     event.preventDefault();
     const name = player.trim();
     if (!name) { setState('error'); setMessage('Enter a name first.'); return; }
+    try { localStorage.setItem(nameKey, name); } catch {}
     setState('sending');
     try {
-      try { localStorage.setItem(nameKey, name); } catch {}
-      await submitScore(name, game, Math.round(seconds * 1000));
+      await submitScore(name, game, Math.round(seconds * 1000), byPurity ? purity : undefined);
       setState('sent');
-      setMessage('Time submitted to the leaderboard.');
+      setMessage(byPurity ? 'Batch submitted to the leaderboard.' : 'Time submitted to the leaderboard.');
     } catch (error) {
       setState('error');
       setMessage(error instanceof Error ? error.message : 'Could not submit that time.');
@@ -34,11 +31,11 @@ export function SubmitScore({ game, seconds }: { game: GameId; seconds: number }
   if (state === 'sent') return <p className="submit-score-done" role="status">{message}</p>;
 
   return <form className="submit-score" onSubmit={send}>
-    <label htmlFor="player-name">Post this time</label>
+    <label htmlFor="player-name">{byPurity ? 'Post this batch' : 'Post this time'}</label>
     <input
       id="player-name"
       value={player}
-      onChange={(event) => setPlayer(event.target.value)}
+      onChange={(event) => onPlayerChange(event.target.value)}
       placeholder="Your name"
       maxLength={24}
       autoComplete="nickname"

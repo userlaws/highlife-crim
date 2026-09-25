@@ -37,4 +37,6 @@ export function useGameFrame(active:boolean, frame:(dt:number, seconds:number) =
   }, [active]);
 }
 
-export type GameProps = {active:boolean; remaining:number; duration:number; onFinish:(success:boolean, message:string) => void};
+// clock is the run clock: seconds left, or seconds elapsed when duration is 0 (no limit).
+// Graded games pass a score to onFinish instead of being ranked by time.
+export type GameProps = {active:boolean; clock:number; duration:number; onFinish:(success:boolean, message:string, score?:number) => void};

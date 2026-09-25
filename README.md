@@ -41,11 +41,11 @@ A Neon Function (`neon-functions/api.ts`, declared in `neon.ts`) serves:
 
 | Method | Route | Notes |
 | --- | --- | --- |
-| `GET` | `/scores?game=&limit=` | One row per player per game — their personal best, fastest first |
-| `POST` | `/scores` | `{ player, game, ms }`; validated and rate limited per IP |
+| `GET` | `/scores?game=&limit=` | One row per player per game — their personal best, fastest first. `game=meth` ranks by purity, highest first. The all-games view orders by each entry's rank within its game |
+| `POST` | `/scores` | `{ player, game, ms, purity? }`; `purity` (0–100) is required for `meth`. Validated and rate limited per IP |
 | `GET` | `/health` | Liveness check |
 
-`game` is one of `code`, `drill`, `data`, `volt`. Deploy changes with `neon deploy`.
+`game` is one of `code`, `drill`, `data`, `volt`, `meth`. Run `node scripts/db-setup.mjs` to apply schema changes, then deploy with `neon deploy`.
 
 Times are submitted from the success panel after you finish a run — enter a name
 and hit Submit. The name is remembered in `localStorage` for later runs.
@@ -56,14 +56,17 @@ The toggle in the header tiles the page with screenshots. Tiles are laid out on 
 measured grid sized to the page, so they always fill it and never overlap or repeat.
 
 Source screenshots live in a `background/` folder alongside this repo (not checked
-in, since they're large). To regenerate the optimized tiles after adding images:
+in, since they're large). Drop new pictures there; `npm run dev` and `npm run build`
+sync them first. To sync by hand:
 
 ```bash
 node scripts/build-collage.mjs [sourceDir]
 ```
 
-That converts each image to webp, skips byte-identical duplicates, and rewrites
-`lib/collage-photos.ts`.
+That converts new or changed images to webp in `public/collage/`, removes tiles
+whose source is gone, and skips byte-identical duplicates. The home page lists
+`public/collage/` itself, so there is no photo list to edit. Commit the tiles so
+deployments (which have no `background/` folder) include them.
 
 ## Credits
 

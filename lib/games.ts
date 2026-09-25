@@ -1,8 +1,8 @@
 export const gameCatalog = {
   code: {
-    title: 'DES Code Match', limit: 15,
+    title: 'DES Code Match', limit: 0, limitLabel: 'Highlife default',
     description: 'Find both constant code blocks in a changing hex grid.',
-    instructions: 'Move the left selection with W A S D and confirm with Space. Move the right selection with the arrow keys and confirm with Enter. Match both seven-character targets. Wrong confirmations deduct 5 seconds, then 10 seconds, and so on.',
+    instructions: 'Move the left selection with W A S D and confirm with Space. Move the right selection with the arrow keys and confirm with Enter. Match both seven-character targets. Wrong confirmations cost 5 seconds, then 10 seconds, and so on — taken off the timer, or added to your time when there is no limit.',
     source: 'https://github.com/DV-studios/mhacking',
     sourceName: 'mhacking',
   },
@@ -27,9 +27,19 @@ export const gameCatalog = {
     source: 'https://github.com/ultrahacx/ultra-voltlab',
     sourceName: 'ultra-voltlab',
   },
+  meth: {
+    title: 'Meth Cook', limit: 0,
+    description: 'Hold the batch at the right heat until the cook finishes.',
+    instructions: 'Press E to fire up the burner, then add lithium (A), acetone (S), and sulfuric acid (D). The cook starts once all three are in. Use Up / Down to change the temperature in 5% steps. The batch only reports whether it is responding well to the heat, a moment late, and the right temperature drifts every 12 seconds. Hunt it down and hold it. Stay on target more than 65% of the cook for White, and more than 80% for Cloudy. Drop to 50% or less after the first minute and the batch blows.',
+    source: 'https://github.com/Em3rgencyLT/fivem-highlife-meth',
+    sourceName: 'Em3rgencyLT / fivem-highlife-meth',
+  },
 } as const;
 
 export type GameId = keyof typeof gameCatalog;
+/** Games ranked by purity (highest first) instead of time (fastest first). */
+export const purityGames: readonly GameId[] = ['meth'];
+export const timeLimitPresets = [0, 15, 30, 45, 60, 90] as const;
 export function isGameId(value: string): value is GameId { return Object.hasOwn(gameCatalog, value); }
 
 export const HEX = '0123456789ABCDEF';
@@ -102,4 +112,42 @@ export function stepDrill(previous: DrillState, pressure:number, throttle:number
     } else position = depth;
   } else if (!pressing) heat -= dt * 0.5;
   return {position, depth, speed, heat:clamp(heat, 0, 1)};
+}
+
+// Meth cook, after Em3rgencyLT/fivem-highlife-meth. See docs/game-sources.md.
+export const methIngredients = [
+  {key:'a', name:'Lithium', max:5},
+  {key:'s', name:'Acetone', max:4},
+  {key:'d', name:'Sulfuric acid', max:6},
+] as const;
+export const methStartTemperature = 50;
+export const methShiftSeconds = 12;
+export type MethQuality = 'terrible' | 'white' | 'cloudy' | 'blown';
+export const methYield = {terrible:{trays:1, grade:'Shitty'}, white:{trays:2, grade:'White'}, cloudy:{trays:3, grade:'Cloudy'}} as const;
+const randomBetween = (low: number, high: number) => low + randomInt(high - low + 1);
+function randomStep(low: number, high: number, exclude: number) {
+  const options = [];
+  for (let value = low; value <= high; value += 5) if (value !== exclude) options.push(value);
+  return options[randomInt(options.length)];
+}
+export function createMethCook() {
+  return {
+    length: randomBetween(135, 145),
+    firstShift: randomBetween(5, 15),
+    feedbackDelayMs: randomBetween(150, 400),
+    target: randomStep(5, 95, 0),
+  };
+}
+/** The next target temperature: a 5% step within ±25% of the current one, never the same. */
+export const nextMethTarget = (target: number) => randomStep(Math.max(5, target - 25), Math.min(95, target + 25), target);
+/** How many target shifts should have happened by this point of the cook. */
+export const methShiftsDue = (elapsed: number, firstShift: number) => elapsed < firstShift ? 0 : 1 + Math.floor((elapsed - firstShift) / methShiftSeconds);
+/** The batch responds to the target temperature and the step above it. */
+export const methOnTarget = (temperature: number, target: number) => temperature === target || temperature === target + 5;
+export function methQuality(elapsed: number, onTarget: number): MethQuality {
+  const ratio = elapsed > 0 ? onTarget / elapsed : 0;
+  if (elapsed >= 60 && ratio <= 0.5) return 'blown';
+  if (elapsed < 30 || ratio < 0.65) return 'terrible';
+  // The source leaves the previous grade on screen for 80%+ before two minutes; show White there.
+  return elapsed >= 120 && ratio >= 0.8 ? 'cloudy' : 'white';
 }

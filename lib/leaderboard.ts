@@ -1,6 +1,7 @@
 import { gameCatalog, GameId } from './games';
 
-export type Score = { rank: number; player: string; game: GameId; ms: number };
+// purity is a percentage and only set for purity-ranked games (meth).
+export type Score = { rank: number; player: string; game: GameId; ms: number; purity?: number | null };
 
 const apiBase = (process.env.NEXT_PUBLIC_NEON_API_URL ?? '').replace(/\/$/, '');
 
@@ -10,6 +11,10 @@ export const titleToGame = new Map<string, GameId>(gameIds.map((id) => [gameCata
 
 export function formatTime(ms: number) {
   return `${(ms / 1000).toFixed(2)}s`;
+}
+
+export function formatScore(score: Score) {
+  return score.purity == null ? formatTime(score.ms) : `${score.purity.toFixed(1)}%`;
 }
 
 async function call(path: string, init?: RequestInit) {
@@ -26,10 +31,10 @@ export async function fetchScores(game: GameId | null, signal?: AbortSignal): Pr
   return body.scores ?? [];
 }
 
-export async function submitScore(player: string, game: GameId, ms: number) {
+export async function submitScore(player: string, game: GameId, ms: number, purity?: number) {
   return call('/scores', {
     method: 'POST',
     headers: { 'content-type': 'application/json' },
-    body: JSON.stringify({ player, game, ms }),
+    body: JSON.stringify({ player, game, ms, purity }),
   });
 }

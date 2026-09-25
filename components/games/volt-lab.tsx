@@ -13,7 +13,7 @@ function shiftSocket(current:number, direction:number, taken:(index:number)=>boo
   return free[Math.min(free.length-1, Math.max(0, at + direction))];
 }
 
-export function VoltLab({active, remaining, duration, onFinish}:GameProps) {
+export function VoltLab({active, clock, duration, onFinish}:GameProps) {
   const [puzzle] = useState(createVoltPuzzle);
   const [symbols] = useState(()=>{
     const items=['Φ','Θ','≋'];
@@ -34,6 +34,7 @@ export function VoltLab({active, remaining, duration, onFinish}:GameProps) {
   const hasPreview = output>=0 && connections[input]<0 && !connections.includes(output);
   const previewConnections = hasPreview ? connections.map((to,i)=>i===input?output:to) : connections;
   const total = voltageTotal(puzzle.values,puzzle.multipliers,previewConnections);
+  const charge = duration ? Math.ceil(clock/duration*6) : 6;
   const canConnect = active && !pending && output>=0 && connections[input] < 0 && !connections.includes(output);
   useEffect(() => {
     const ctx = canvas.current?.getContext('2d'); if (!ctx) return;
@@ -80,6 +81,6 @@ export function VoltLab({active, remaining, duration, onFinish}:GameProps) {
     <div className="volt-field"><canvas ref={canvas} width={700} height={360} aria-hidden="true"/>
       {puzzle.values.map((value,i)=><button key={i} className={`volt-input ${input===i?'socket-selected':''} ${connections[i]>=0?'socket-used':''}`} style={{top:`${25+i*25}%`}} aria-label={`Input ${i+1}: ${value}${connections[i]>=0?', connected':''}`} aria-pressed={input===i} disabled={!active||pending||connections[i]>=0} onClick={()=>setInput(i)}><DigitalNumber value={value}/></button>)}
       {symbols.map((symbol,i)=><button key={i} className={`volt-output ${output===i?'socket-selected':''} ${connections.includes(i)?'socket-used':''}`} style={{top:`${25+i*25}%`}} aria-label={`Output ${i+1}${connections.includes(i)?', connected':''}`} aria-pressed={output===i} disabled={!active||pending||connections.includes(i)} onClick={()=>setOutput(i)}>{symbol}</button>)}
-    </div><div className="volt-bottom"><div className="battery" aria-label={`${Math.ceil(remaining/duration*6)} timer segments remaining`}>{Array.from({length:6},(_,i)=><i key={i} className={i<Math.ceil(remaining/duration*6)?'charged':''}/>)}</div><div className={`volt-display volt-result ${total===puzzle.target?'voltage-matched':''}`}><strong><DigitalNumber value={total} pad={3}/></strong><span>RESULT</span></div><span className="volt-committed">{connections.filter(to=>to>=0).length} / 3 wired</span></div>
+    </div><div className="volt-bottom"><div className="battery" aria-label={`${charge} timer segments remaining`}>{Array.from({length:6},(_,i)=><i key={i} className={i<charge?'charged':''}/>)}</div><div className={`volt-display volt-result ${total===puzzle.target?'voltage-matched':''}`}><strong><DigitalNumber value={total} pad={3}/></strong><span>RESULT</span></div><span className="volt-committed">{connections.filter(to=>to>=0).length} / 3 wired</span></div>
     </div><p className="game-feedback" role="status">{message}</p><div className="control-row"><span>Input <kbd>W</kbd><kbd>S</kbd> · Output <kbd>↑</kbd><kbd>↓</kbd> · commit is final</span><Button disabled={!canConnect} onClick={connect}>Connect <kbd>Enter</kbd></Button></div></div>;
 }

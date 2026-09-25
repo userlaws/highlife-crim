@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { codeGrid, createCodePuzzle, moveCodeCursor } from '@/lib/games';
 import { GameProps, useGameKeys } from './use-game-input';
 
-export function CodeMatch({active, remaining, onFinish, onPenalty}:GameProps & {onPenalty:(seconds:number)=>void}) {
+export function CodeMatch({active, clock, duration, onFinish, onPenalty}:GameProps & {onPenalty:(seconds:number)=>void}) {
   const [puzzle] = useState(createCodePuzzle);
   const [cells, setCells] = useState(() => codeGrid(puzzle));
   const [positions, setPositions] = useState([-18, -7]);
@@ -29,7 +29,7 @@ export function CodeMatch({active, remaining, onFinish, onPenalty}:GameProps & {
     } else {
       mistakes.current++;
       const penalty = mistakes.current * 5;
-      setMessage(`Wrong block. ${penalty} seconds deducted.`);
+      setMessage(`Wrong block. ${penalty} seconds ${duration ? 'deducted' : 'added'}.`);
       onPenalty(penalty);
     }
   }
@@ -45,7 +45,7 @@ export function CodeMatch({active, remaining, onFinish, onPenalty}:GameProps & {
         const left=index>=positions[0]&&index<positions[0]+7;
         const right=index>=positions[1]&&index<positions[1]+7;
         return <span key={i} className={right?'header-right':left?'header-left':''}>{right?puzzle.targets[1][index-positions[1]]:left?puzzle.targets[0][index-positions[0]]:'\u00a0'}</span>;
-      })}<time>{remaining.toFixed(2)}s</time></div>
+      })}<time>{clock.toFixed(2)}s</time></div>
       <div className="code-board" role="group" aria-label="Hexadecimal code grid">
         {cells.map((char,index) => {
           const left = index >= positions[0] && index < positions[0]+7;

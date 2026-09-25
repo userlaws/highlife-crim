@@ -6,7 +6,9 @@
     "node": "22.x"
   },
   "scripts": {
+    "predev": "node scripts/build-collage.mjs",
     "dev": "next dev",
+    "prebuild": "node scripts/build-collage.mjs",
     "build": "next build",
     "start": "next start",
     "lint": "eslint . --ignore-pattern .next"

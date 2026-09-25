@@ -2,11 +2,10 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Switch } from '@/components/ui/switch';
-import { photos } from '@/lib/collage-photos';
 
 const storageKey = 'how-to-crim-collage-v1';
 
-function shuffle(): string[] {
+function shuffle(photos: string[]): string[] {
   const order = [...photos];
   for (let index = order.length - 1; index > 0; index--) {
     const swap = Math.floor(Math.random() * (index + 1));
@@ -18,7 +17,7 @@ function shuffle(): string[] {
 // Every photo is used at most once, so the grid can never hold more cells than
 // we have pictures. Pick the split that keeps cells closest to 4:3 while
 // spending as many of the photos as possible.
-function fitGrid(width: number, height: number) {
+function fitGrid(photos: string[], width: number, height: number) {
   let best = {columns: 1, rows: photos.length, score: Infinity};
   for (let columns = 1; columns <= photos.length; columns++) {
     const rows = Math.floor(photos.length / columns);
@@ -30,7 +29,8 @@ function fitGrid(width: number, height: number) {
   return best;
 }
 
-export function CollageBackground() {
+// photos is the list of tile names in public/collage, read from the folder by the page.
+export function CollageBackground({ photos }: { photos: string[] }) {
   const [enabled, setEnabled] = useState(false);
   const [order, setOrder] = useState<string[]>([]);
   const [grid, setGrid] = useState({columns: 0, rows: 0});
@@ -41,8 +41,8 @@ export function CollageBackground() {
   }, []);
 
   useEffect(() => {
-    if (enabled) setOrder(shuffle());
-  }, [enabled]);
+    if (enabled) setOrder(shuffle(photos));
+  }, [enabled, photos]);
 
   // The layer is sized by the page, not by its own contents, so measuring it
   // and filling it cell by cell cannot feed back into the layout.
@@ -52,14 +52,14 @@ export function CollageBackground() {
     function measure() {
       const {width, height} = element!.getBoundingClientRect();
       if (!width || !height) return;
-      const {columns, rows} = fitGrid(width, height);
+      const {columns, rows} = fitGrid(photos, width, height);
       setGrid((current) => current.columns === columns && current.rows === rows ? current : {columns, rows});
     }
     measure();
     const observer = new ResizeObserver(measure);
     observer.observe(element);
     return () => observer.disconnect();
-  }, [enabled]);
+  }, [enabled, photos]);
 
   const placements = useMemo(
     () => order.slice(0, grid.columns * grid.rows),
