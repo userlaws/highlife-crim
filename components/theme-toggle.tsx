@@ -3,10 +3,10 @@ import { useEffect, useState } from 'react';
 import { Switch } from '@/components/ui/switch';
 
 export function ThemeToggle() {
-  const [dark, setDark] = useState(false);
+  const [dark, setDark] = useState(true);
   useEffect(() => {
-    let theme = 'light';
-    try { theme = localStorage.getItem('how-to-crim-theme-v2') === 'dark' ? 'dark' : 'light'; } catch {}
+    let theme = 'dark';
+    try { theme = localStorage.getItem('how-to-crim-theme-v2') === 'light' ? 'light' : 'dark'; } catch {}
     const isDark = theme === 'dark';
     setDark(isDark);
     document.documentElement.dataset.theme = theme;

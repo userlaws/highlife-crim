@@ -54,8 +54,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" data-theme="light" suppressHydrationWarning>
-      <head><script dangerouslySetInnerHTML={{__html:"try{var t=localStorage.getItem('how-to-crim-theme-v2')==='dark'?'dark':'light';document.documentElement.dataset.theme=t;document.documentElement.classList.toggle('dark',t==='dark')}catch(e){}"}}/></head>
+    <html lang="en" data-theme="dark" className="dark" suppressHydrationWarning>
+      <head><script dangerouslySetInnerHTML={{__html:"try{var t=localStorage.getItem('how-to-crim-theme-v2')==='light'?'light':'dark';document.documentElement.dataset.theme=t;document.documentElement.classList.toggle('dark',t==='dark')}catch(e){}"}}/></head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >

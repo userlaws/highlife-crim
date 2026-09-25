@@ -27,7 +27,7 @@ Researched September 23, 2026. The site contains original React/CSS/canvas brows
 - Drilling's source was read directly and its tap impulses, held deltas, stalled-bit behavior, cooling, and terminal conditions were verified. Its four-pin cutaway is still an original illustration, not the native GTA Scaleform artwork.
 - The drill controls are clickable/holdable as well as keyboard-driven. [Player feedback in the standalone drilling release](https://forum.cfx.re/t/standalone-drilling-minigame/5260531) reports that tapping W rapidly can finish very quickly without overheating; the trainer preserves the source's small fresh-press impulse instead of adding an unsupported anti-spam rule. This is feedback about a public resource, not verification of Highlife's private configuration.
 - Escape/Backspace abort a running trainer. All animation loops, keyboard handlers, and pending voltage timers are cleaned up on leaving the game.
-- Internal links use client navigation with prefetch. Data Crack animates transforms directly, without React renders per animation frame. Drilling simulation remains frame-based but readouts update at 20 Hz. Light is the initial theme; explicit choices persist under a new preference key so old automatically saved dark defaults do not override it.
+- Internal links use client navigation with prefetch. Data Crack animates transforms directly, without React renders per animation frame. Drilling simulation remains frame-based but readouts update at 20 Hz. Dark is the initial theme; explicit light or dark choices persist under the theme preference key.
 
 ## Local results
 

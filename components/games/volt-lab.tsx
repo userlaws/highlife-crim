@@ -30,8 +30,10 @@ export function VoltLab({active, remaining, duration, onFinish}:GameProps) {
   const [connections, setConnections] = useState([-1,-1,-1]);
   const committed = useRef(connections);
   const canvas = useRef<HTMLCanvasElement>(null);
-  const [message, setMessage] = useState('Each symbol hides ×1, ×10 or ×50, reshuffled every attempt. RESULT only moves once you commit.');
-  const total = voltageTotal(puzzle.values,puzzle.multipliers,connections);
+  const [message, setMessage] = useState('Each symbol hides ×1, ×10 or ×50, reshuffled every attempt. RESULT previews your selected match.');
+  const hasPreview = output>=0 && connections[input]<0 && !connections.includes(output);
+  const previewConnections = hasPreview ? connections.map((to,i)=>i===input?output:to) : connections;
+  const total = voltageTotal(puzzle.values,puzzle.multipliers,previewConnections);
   const canConnect = active && !pending && output>=0 && connections[input] < 0 && !connections.includes(output);
   useEffect(() => {
     const ctx = canvas.current?.getContext('2d'); if (!ctx) return;
